@@ -16,6 +16,7 @@
   "status",
   "employee_number",
   "date_of_birth",
+  "age",
   "date_of_joining",
   "mobile",
   "department",
@@ -25,7 +26,9 @@
   {
    "fieldname": "first_name",
    "fieldtype": "Data",
-   "label": "First Name"
+   "in_list_view": 1,
+   "label": "First Name",
+   "reqd": 1
   },
   {
    "fieldname": "middle_name",
@@ -51,8 +54,10 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Status",
-   "options": "Active\nInactive\nSuspended\nLeft"
+   "options": "Active\nInactive\nSuspended\nLeft",
+   "reqd": 1
   },
   {
    "fieldname": "employee_number",
@@ -62,7 +67,9 @@
   {
    "fieldname": "date_of_birth",
    "fieldtype": "Date",
-   "label": "Date of Birth"
+   "in_list_view": 1,
+   "label": "Date of Birth",
+   "reqd": 1
   },
   {
    "fieldname": "date_of_joining",
@@ -72,7 +79,9 @@
   {
    "fieldname": "mobile",
    "fieldtype": "Data",
-   "label": "Mobile"
+   "in_list_view": 1,
+   "label": "Mobile",
+   "reqd": 1
   },
   {
    "fieldname": "department",
@@ -85,12 +94,18 @@
    "fieldtype": "Table",
    "label": "Employee Education",
    "options": "Employee Education"
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Int",
+   "label": "Age",
+   "read_only": 1
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-01-17 02:39:49.644373",
+ "modified": "2023-01-20 19:22:10.390859",
  "modified_by": "Administrator",
  "module": "HR Management System",
  "name": "Employee",
@@ -110,6 +125,7 @@
    "write": 1
   }
  ],
+ "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
