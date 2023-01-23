@@ -1,0 +1,126 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "LEAPP.#####",
+ "creation": "2023-01-21 03:36:39.779706",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "full_name",
+  "leave_type",
+  "department",
+  "status",
+  "leave_balance_before",
+  "from_date",
+  "to_date",
+  "total_days",
+  "alternative_employee",
+  "full_name_alter",
+  "reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "leave_type",
+   "fieldtype": "Link",
+   "label": "Leave Type",
+   "options": "Leave Type"
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nApproved\nRejected"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "total_days",
+   "fieldtype": "Int",
+   "label": "Total Leave Days",
+   "read_only": 1
+  },
+  {
+   "fieldname": "alternative_employee",
+   "fieldtype": "Link",
+   "label": "Alternative Employee",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "fetch_from": "employee.full_name",
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.full_name",
+   "fieldname": "full_name_alter",
+   "fieldtype": "Data",
+   "label": "Alternative Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "leave_balance_before",
+   "fieldtype": "Float",
+   "label": "Leave Balance Before Application",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-01-22 09:48:06.333776",
+ "modified_by": "Administrator",
+ "module": "HR Management System",
+ "name": "Leave Application",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
