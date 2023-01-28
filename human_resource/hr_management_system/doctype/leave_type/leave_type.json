@@ -8,18 +8,37 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "leave_type"
+  "leave_type",
+  "max_days_allowed",
+  "allow_negative_balance",
+  "applicable_after"
  ],
  "fields": [
   {
    "fieldname": "leave_type",
    "fieldtype": "Data",
    "label": "Leave Type"
+  },
+  {
+   "fieldname": "max_days_allowed",
+   "fieldtype": "Float",
+   "label": "Max Continuous Days Allowed"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_negative_balance",
+   "fieldtype": "Check",
+   "label": " Allow Negative Balance"
+  },
+  {
+   "fieldname": "applicable_after",
+   "fieldtype": "Data",
+   "label": "Applicable After"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-01-21 03:27:57.281256",
+ "modified": "2023-01-28 00:39:07.386361",
  "modified_by": "Administrator",
  "module": "HR Management System",
  "name": "Leave Type",

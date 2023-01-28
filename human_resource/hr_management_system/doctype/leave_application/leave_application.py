@@ -2,62 +2,98 @@
 # For license information, please see license.txt
 
 import frappe
-from datetime import date
 from frappe.model.document import Document
+from frappe.utils.data import date_diff, getdate
+from datetime import date
 
 
 class LeaveApplication(Document):
 
-	@frappe.whitelist(allow_guest=False)
-	def get_y_m_d(self, dat):
-		d = list(map(int, dat.split('-')))
-		return d
+	def get_total_days(self):
+		if self.from_date and self.to_date:
+			total_days = date_diff(self.to_date, self.from_date)
+			return total_days + 1
 
-	@frappe.whitelist(allow_guest=False)
-	def get_days(self):
-		start = self.get_y_m_d(self.from_date)
-		end = self.get_y_m_d(self.to_date)
-		if end[0] == start[0] and end[1] == start[1]:
-			days = end[2] - start[2]
-			return days
-		elif end[0] == start[0] and end[1] != start[1]:
-			days = (end[1] - start[1]) * 30 + (end[2] - start[2])
-			return days
-		elif end[0] != start[0]:
-			days = (end[0] - start[0]) * 365 + (end[1] - start[1]) * 30 + (end[2] - start[2])
-			return days
-		return
-
-	@frappe.whitelist(allow_guest=False)
-	def get_balance_before(self):
-		emp_docs = frappe.get_all('Leave Allocation', ['name'], filters={
+	def get_allocate_doc(self):
+		allocate_docs = frappe.get_all('Leave Allocation', ['name'], filters={
 			'employee': self.employee,
+			# 'from_date': [''],
+			# 'to_date': [''],
 			'leave_type': self.leave_type
-			})
-		if emp_docs:
-			emp_doc = frappe.get_doc('Leave Allocation', emp_docs[0].name)
-			s_duration = emp_doc.from_date
-			e_duration = emp_doc.to_date
-			start = self.get_y_m_d(self.from_date)
-			end = self.get_y_m_d(self.to_date)
-			s_leave = date(start[0], start[1], start[2])
-			e_leave = date(end[0], end[1], end[2])
-			if s_duration > s_leave or e_duration < e_leave:
-				frappe.throw("Check Your Start & End Allocation Dates Please.")
-
-			balance_before = emp_doc.get_value('total_leave_allocate')
-			if balance_before >= self.total_days:
-				emp_doc.set('total_leave_allocate', balance_before - self.total_days)
-				emp_doc.flags.ignore_permissions = True
-				emp_doc.flags.ignore_mandatory = True
-				emp_doc.save()
-				frappe.db.commit()
-				return balance_before
-			else:
-				frappe.throw("Check Your Rest Allocation Days Please.")
+		})
+		if allocate_docs:
+			allocate_doc = frappe.get_doc('Leave Allocation', allocate_docs[0].name)
+			return allocate_doc
 		else:
 			frappe.throw("No Leave Allocation Exists!")
 
-	def before_save(self):
-		self.total_days = float(self.get_days())
-		self.leave_balance_before = self.get_balance_before()
+	def check_application_docs(self):
+		if self.from_date:
+			application_docs = frappe.get_all('Leave Application', ['name'], filters={
+				'employee': self.employee,
+				'status': 'Submitted',
+				'from_date': getdate(self.from_date)
+			})
+			if application_docs:
+				frappe.throw("A Leave Application Exists On The Same Date Of Start!")
+		if self.to_date:
+			application_docs = frappe.get_all('Leave Application', ['name'], filters={
+				'employee': self.employee,
+				'status': 'Submitted',
+				'to_date': getdate(self.to_date)
+			})
+			if application_docs:
+				frappe.throw("A Leave Application Exists On The Same Date Of End!")
+
+	def check_application_dates(self):
+		if getdate(self.to_date) < getdate(self.from_date):
+			frappe.throw("Start Date Must Be Before End Date")
+
+	def check_max_allowed_days(self):
+		if self.from_date:
+			leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
+			max_days = leave_type_doc.max_days_allowed
+			diff = date_diff(getdate(self.from_date), date.today()) + 1
+			if diff > int(max_days):
+				frappe.throw(f"You Have To Apply Before {max_days}!")
+
+	def get_leave_balance_before(self):
+		if self.employee and self.leave_type and self.from_date and self.to_date:
+			allocate_doc = self.get_allocate_doc()
+			if allocate_doc.from_date > getdate(self.from_date) or allocate_doc.to_date < getdate(self.to_date):
+				frappe.throw("Check Your Start & End Allocation Dates Please.")
+			balance_before = allocate_doc.get_value('total_leave_allocate')
+			return balance_before
+
+	def on_submit_total_leave_allocate(self, balance):
+		if balance >= self.total_days:
+			allocate_doc = self.get_allocate_doc()
+			allocate_doc.set('total_leave_allocate', balance - self.total_days)
+			allocate_doc.flags.ignore_permissions = True
+			allocate_doc.flags.ignore_mandatory = True
+			allocate_doc.save()
+			frappe.db.commit()
+
+		else:
+			frappe.throw("Check Your Rest Allocation Days Please.")
+
+	def on_cancel_total_leave_allocate(self):
+		allocate_doc = self.get_allocate_doc()
+		allocate_doc.set('total_leave_allocate', allocate_doc.total_leave_allocate + self.total_days)
+		allocate_doc.flags.ignore_permissions = True
+		allocate_doc.flags.ignore_mandatory = True
+		allocate_doc.save()
+		frappe.db.commit()
+
+	def validate(self):
+		self.check_application_dates()
+		self.check_application_docs()
+		self.check_max_allowed_days()
+		self.total_days = float(self.get_total_days())
+		self.leave_balance_before = self.get_leave_balance_before()
+
+	def on_submit(self):
+		self.on_submit_total_leave_allocate(self.leave_balance_before)
+
+	def on_cancel(self):
+		self.on_cancel_total_leave_allocate()

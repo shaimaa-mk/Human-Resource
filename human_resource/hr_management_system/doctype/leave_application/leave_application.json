@@ -19,7 +19,8 @@
   "total_days",
   "alternative_employee",
   "full_name_alter",
-  "reason"
+  "reason",
+  "amended_from"
  ],
  "fields": [
   {
@@ -94,11 +95,21 @@
    "fieldtype": "Float",
    "label": "Leave Balance Before Application",
    "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Leave Application",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-01-22 09:48:06.333776",
+ "modified": "2023-01-24 22:25:43.374443",
  "modified_by": "Administrator",
  "module": "HR Management System",
  "name": "Leave Application",
