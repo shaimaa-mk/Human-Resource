@@ -53,29 +53,47 @@ class LeaveApplication(Document):
 		if self.from_date:
 			leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
 			max_days = leave_type_doc.max_days_allowed
-			diff = date_diff(getdate(self.from_date), date.today()) + 1
+			diff = date_diff(getdate(self.from_date), self.to_date) + 1
 			if diff > int(max_days):
-				frappe.throw(f"You Have To Apply Before {max_days}!")
+				frappe.throw(f"You're allowed just {max_days} days continue!")
 
-	def get_leave_balance_before(self):
-		if self.employee and self.leave_type and self.from_date and self.to_date:
-			allocate_doc = self.get_allocate_doc()
-			if allocate_doc.from_date > getdate(self.from_date) or allocate_doc.to_date < getdate(self.to_date):
-				frappe.throw("Check Your Start & End Allocation Dates Please.")
-			balance_before = allocate_doc.get_value('total_leave_allocate')
-			return balance_before
+	def check_applicable_after(self):
+		if self.from_date:
+			leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
+			after_days = leave_type_doc.applicable_after
+			diff = date_diff(getdate(self.from_date), date.today()) + 1
+			if diff > int(after_days):
+				frappe.throw(f"You Have To Apply Before {after_days}!")
+	#
+	# def get_leave_balance_before(self):
+	# 	if self.employee and self.leave_type and self.from_date and self.to_date:
+	# 		allocate_doc = self.get_allocate_doc()
+	# 		if allocate_doc.from_date > getdate(self.from_date) or allocate_doc.to_date < getdate(self.to_date):
+	# 			frappe.throw("Check Your Start & End Allocation Dates Please.")
+	# 		balance_before = allocate_doc.get_value('total_leave_allocate')
+	# 		return balance_before
 
 	def on_submit_total_leave_allocate(self, balance):
-		if balance >= self.total_days:
+		leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
+		check_box = leave_type_doc.allow_negative_balance
+		if check_box:
 			allocate_doc = self.get_allocate_doc()
 			allocate_doc.set('total_leave_allocate', balance - self.total_days)
 			allocate_doc.flags.ignore_permissions = True
 			allocate_doc.flags.ignore_mandatory = True
 			allocate_doc.save()
 			frappe.db.commit()
-
 		else:
-			frappe.throw("Check Your Rest Allocation Days Please.")
+			if balance >= self.total_days:
+				allocate_doc = self.get_allocate_doc()
+				allocate_doc.set('total_leave_allocate', balance - self.total_days)
+				allocate_doc.flags.ignore_permissions = True
+				allocate_doc.flags.ignore_mandatory = True
+				allocate_doc.save()
+				frappe.db.commit()
+
+			else:
+				frappe.throw("Check Your Rest Allocation Days Please.")
 
 	def on_cancel_total_leave_allocate(self):
 		allocate_doc = self.get_allocate_doc()
@@ -89,11 +107,38 @@ class LeaveApplication(Document):
 		self.check_application_dates()
 		self.check_application_docs()
 		self.check_max_allowed_days()
+		self.check_applicable_after()
 		self.total_days = float(self.get_total_days())
-		self.leave_balance_before = self.get_leave_balance_before()
+		# self.leave_balance_before = self.get_leave_balance_before()
 
 	def on_submit(self):
 		self.on_submit_total_leave_allocate(self.leave_balance_before)
 
 	def on_cancel(self):
 		self.on_cancel_total_leave_allocate()
+
+
+def get_allocate_doc(employee, leave_type):
+	allocate_docs = frappe.get_all('Leave Allocation', ['name'], filters={
+		'employee': employee,
+		# 'from_date': [''],
+		# 'to_date': [''],
+		'leave_type': leave_type
+	})
+	if allocate_docs:
+		allocate_doc = frappe.get_doc('Leave Allocation', allocate_docs[0].name)
+		return allocate_doc
+	else:
+		frappe.throw("No Leave Allocation Exists!")
+
+
+@frappe.whitelist(allow_guest=False)
+def get_leave_balance_before(employee, leave_type, from_date, to_date):
+	if employee and leave_type and from_date and to_date:
+		allocate_doc = get_allocate_doc(employee, leave_type)
+		if allocate_doc.from_date > getdate(from_date) or allocate_doc.to_date < getdate(to_date):
+			frappe.throw("Check Your Start & End Allocation Dates Please.")
+		balance_before = allocate_doc.get_value('total_leave_allocate')
+		return balance_before
+
+

@@ -17,7 +17,7 @@ class Employee(Document):
 	def validate(self):
 		if self.status != 'Active':
 			frappe.throw("Status Of Employee Must Be Active!")
-		if self.get_age() <= 60:
+		if self.get_age() >= 60:
 			frappe.throw("Age must be more than 60 years!")
 		if not (len(self.mobile) == 10 and self.mobile.startswith('059')):
 			frappe.throw("Mobile No. Must Be 10 Digits!")
