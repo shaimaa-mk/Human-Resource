@@ -17,12 +17,14 @@ frappe.ui.form.on('Leave Application', {
 
     from_date:
         function(frm) {
-            frm.trigger("get_leave_balance_before")
+            frm.trigger("get_leave_balance_before"),
+            frm.trigger("get_total_days")
             },
 
 	to_date:
 	    function(frm) {
-            frm.trigger("get_leave_balance_before")
+            frm.trigger("get_leave_balance_before"),
+            frm.trigger("get_total_days")
             },
 
 	get_leave_balance_before:
@@ -40,6 +42,23 @@ frappe.ui.form.on('Leave Application', {
                     },
                     callback: (r) =>{
                         frm.doc.leave_balance_before = r.message;
+                        frm.refresh();
+                    }
+                })
+            },
+    get_total_days:
+            function(frm){
+            if(!frm.doc.from_date | !frm.doc.to_date){
+                return;
+            }
+            frappe.call({
+                    method:"human_resource.hr_management_system.doctype.leave_application.leave_application.get_total_days",
+                    args:{
+                        from_date: frm.doc.from_date,
+                        to_date: frm.doc.to_date
+                    },
+                    callback: (r) =>{
+                        frm.doc.total_days = r.message;
                         frm.refresh();
                     }
                 })

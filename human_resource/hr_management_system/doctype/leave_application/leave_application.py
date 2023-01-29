@@ -9,11 +9,6 @@ from datetime import date
 
 class LeaveApplication(Document):
 
-	def get_total_days(self):
-		if self.from_date and self.to_date:
-			total_days = date_diff(self.to_date, self.from_date)
-			return total_days + 1
-
 	def get_allocate_doc(self):
 		allocate_docs = frappe.get_all('Leave Allocation', ['name'], filters={
 			'employee': self.employee,
@@ -62,16 +57,8 @@ class LeaveApplication(Document):
 			leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
 			after_days = leave_type_doc.applicable_after
 			diff = date_diff(getdate(self.from_date), date.today()) + 1
-			if diff > int(after_days):
+			if diff < int(after_days):
 				frappe.throw(f"You Have To Apply Before {after_days}!")
-	#
-	# def get_leave_balance_before(self):
-	# 	if self.employee and self.leave_type and self.from_date and self.to_date:
-	# 		allocate_doc = self.get_allocate_doc()
-	# 		if allocate_doc.from_date > getdate(self.from_date) or allocate_doc.to_date < getdate(self.to_date):
-	# 			frappe.throw("Check Your Start & End Allocation Dates Please.")
-	# 		balance_before = allocate_doc.get_value('total_leave_allocate')
-	# 		return balance_before
 
 	def on_submit_total_leave_allocate(self, balance):
 		leave_type_doc = frappe.get_doc('Leave Type', self.leave_type)
@@ -108,7 +95,7 @@ class LeaveApplication(Document):
 		self.check_application_docs()
 		self.check_max_allowed_days()
 		self.check_applicable_after()
-		self.total_days = float(self.get_total_days())
+		# self.total_days = float(self.get_total_days())
 		# self.leave_balance_before = self.get_leave_balance_before()
 
 	def on_submit(self):
@@ -142,3 +129,6 @@ def get_leave_balance_before(employee, leave_type, from_date, to_date):
 		return balance_before
 
 
+@frappe.whitelist(allow_guest=False)
+def get_total_days(from_date, to_date):
+	return date_diff(to_date, from_date) + 1
