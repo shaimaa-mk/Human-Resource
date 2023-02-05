@@ -30,13 +30,10 @@ class Attendance(Document):
         end = self.time_diff_in_minutes(settings.end_time, ed_check)
         self.late_hours = start + end
 
-    def on_save(self):
-        self.attendance_date = nowdate()
-
-    def on_submit(self):
-        self.get_work_hours()
-        self.get_status()
-        self.get_late_hours()
+    # def on_submit(self):
+    #     self.get_work_hours()
+    #     self.get_status()
+    #     self.get_late_hours()
 
 
 

@@ -39,8 +39,7 @@
   {
    "fieldname": "attendance_date",
    "fieldtype": "Date",
-   "label": "Attendance Date",
-   "read_only": 1
+   "label": "Attendance Date"
   },
   {
    "fieldname": "department",
@@ -58,12 +57,12 @@
   },
   {
    "fieldname": "check_in",
-   "fieldtype": "Datetime",
+   "fieldtype": "Time",
    "label": "Check In"
   },
   {
    "fieldname": "check_out",
-   "fieldtype": "Datetime",
+   "fieldtype": "Time",
    "label": "Check Out"
   },
   {
@@ -91,7 +90,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-03 23:38:42.048037",
+ "modified": "2023-02-04 03:40:53.094803",
  "modified_by": "Administrator",
  "module": "HR Management System",
  "name": "Attendance",
