@@ -84,6 +84,7 @@ def get_employee(api_access):
     return frappe.get_doc("Employee", {'user': user.name})
 
 
+@frappe.whitelist()
 def save_doc(doctype):
     """
     Aim: to save all changes on Human Resource records without user permissions and insertion conditions.
